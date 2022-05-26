@@ -32,15 +32,21 @@ public class Main {
             Row nextRow = iterator.next(); //get that row
             //we will iterate on the cells of each row
             Iterator<Cell> cellIterator = nextRow.cellIterator();
-            if(nextRow.getRowNum()<7) //**********************************************************************************************************************
+
+            /*if(nextRow.getRowNum()<7) //**********************************************************************************************************************
             {   skippedRows++;
+
                 continue;
-            }
-            // add a new object to the fields array
-            /*try{
-            if(nextRow.getCell(0).getStringCellValue().equals("string")){elements.add(new Field());}
-            else {elements.add(new Parent());}}
-            catch (NullPointerException e){continue;}*/
+
+            }*/
+
+            try{
+                if(nextRow.getCell(0).getStringCellValue().equals("string")){elements.add(new Field());}
+                else {elements.add(new Parent());}}
+            catch (NullPointerException e){
+                skippedRows++;
+                continue;}
+
 
             //While there are cells
             while (cellIterator.hasNext()) {
@@ -55,14 +61,7 @@ public class Main {
                         Cell wantedCell = cellIterator.next();
                         String WantedSCell = wantedCell.getStringCellValue();
 
-                    /*if(nextRow.getCell(2).getStringCellValue().equals("string")){
-                        switch(cell.getColumnIndex()){
-                            case 1: fields.get(nextRow.getRowNum()).setField_name(Scell);
-                            case 2: fields.get(nextRow.getRowNum()).setType(Scell);
-                            case 3: fields.get(nextRow.getRowNum()).setAllowed_value(Scell);
-                            case 4: fields.get(nextRow.getRowNum()).setMandatory(Scell);}
-                    }
-                    else { */
+
                         switch(wantedCell.getColumnIndex()){
                             case 1: elements.get((nextRow.getRowNum())-skippedRows).setField_name(WantedSCell);
                             case 2: elements.get((nextRow.getRowNum())-skippedRows).setType(WantedSCell);
@@ -71,11 +70,11 @@ public class Main {
                                 //default: continue;
                         }
 
-                        //}
-                        //}
-
 
                     }
+
+
+
                     elements.get(nextRow.getRowNum()-skippedRows).Print();
 
                 }
