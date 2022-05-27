@@ -1,6 +1,5 @@
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Iterator;
 //Apache
@@ -33,15 +32,10 @@ public class Main {
             //we will iterate on the cells of each row
             Iterator<Cell> cellIterator = nextRow.cellIterator();
 
-            /*if(nextRow.getRowNum()<7) //**********************************************************************************************************************
-            {   skippedRows++;
-
-                continue;
-
-            }*/
-
+            //we had to do this due to the empty rows in the middle
             try{
-                if(nextRow.getCell(0).getStringCellValue().equals("string")){elements.add(new Field());}
+                //If the type is string put in fields else put in parent
+                if(nextRow.getCell(2).getStringCellValue().equals("string")){elements.add(new Field());}
                 else {elements.add(new Parent());}}
             catch (NullPointerException e){
                 skippedRows++;
@@ -61,7 +55,7 @@ public class Main {
                         Cell wantedCell = cellIterator.next();
                         String WantedSCell = wantedCell.getStringCellValue();
 
-
+                        //since cells positions is fixed we will depend on it to store wanted elements
                         switch(wantedCell.getColumnIndex()){
                             case 1: elements.get((nextRow.getRowNum())-skippedRows).setField_name(WantedSCell);
                             case 2: elements.get((nextRow.getRowNum())-skippedRows).setType(WantedSCell);
@@ -76,6 +70,10 @@ public class Main {
 
 
                     elements.get(nextRow.getRowNum()-skippedRows).Print();
+
+
+
+
 
                 }
 
@@ -145,23 +143,19 @@ class Api {
     public String getType() {
         return type;
     }
-
+    public void getParent(){};
     public void setType(String type) {
         this.type = type;
     }
     public void Print(){
-        System.out.println(getField_name());
-        System.out.println(getAllowed_value());
-        System.out.println(getMandatory());
-        System.out.println(getType());
-        System.out.println("--");
+
     }
 }
 
 
 
 class Field extends Api {
-    private Parent parent; //here we put the parent of our field (there might be none)
+    private String myParent="No parents"; //here we put the parent of our field (there might be none) initial value
 
     //No arg constructor
     public Field(){
@@ -187,8 +181,12 @@ class Field extends Api {
         super.setType(type);
     }
 
+    public void setParent(String parent) {
+        this.myParent = parent;
+    }
 
     public String getField_name() {
+
         return super.getField_name();
     }
 
@@ -204,28 +202,42 @@ class Field extends Api {
         return super.getType();
     }
 
+    public String getMyParent() {
+        getParent();
+        return myParent;
+    }
+
     //return true of the field has no parents and false if not
     public boolean hasNOParents(){
         return super.getField_name().startsWith("/field"); //if there's no object before the field name
-
     }
-    public void getParent(){ //this function should return the name of the fields parent ******Needs Check*******
+
+    public void getParent(){//this function should return the name of the fields parent ******Needs Check*******
         String [] arr;
-        arr= super.getField_name().split("/"); //Split /object1/object2/field6 into [object1, object2,field6]
-        parent.setField_name(arr[arr.length-1]); //the name before field name is the parent and the name before it is the parent of the parent (needs handling)
-        //**********Array index is out of bounds needs to be fixed************
+        arr= super.getField_name().split("/"); //Split /object1/object2/field6 into [ ,object1, object2,field6]
+        if(this.hasNOParents()) super.setField_name(arr[arr.length-1]);
+        else{
+            setField_name(arr[arr.length-1]); //Update Field name
+            setParent(arr[arr.length-2]); }//the name before field name is the parent
         //We need to connect this parent to an object we already made not make a new one
 
     }
-
-    public void setParent(Parent parent) {
-        this.parent = parent;
+    @Override
+    public void Print(){
+        System.out.println("Field name is "+ getField_name());
+        System.out.println("Allowed value is"+ getAllowed_value());
+        System.out.println("Mandatory is "+getMandatory());
+        System.out.println("Type is "+getType());
+        System.out.println("Parent is "+getMyParent());
+        System.out.println("--");
     }
+
 } //End of Field Class
 
 class Parent extends Api {
     //Data fields
-    String [] children;
+    private String myParent="No parents"; //initial value
+    private String [] children;
     //no arg constructor
     public Parent(){
         super();
@@ -243,6 +255,7 @@ class Parent extends Api {
         this.children = children;
     }
     public void setField_name(String field_name) {
+
         super.setField_name(field_name);
     }
 
@@ -257,6 +270,9 @@ class Parent extends Api {
         super.setType(type);
     }
 
+    public void setParent(String parent) {
+        this.myParent = parent;
+    }
 
     public String getField_name() {
         return super.getField_name();
@@ -273,5 +289,31 @@ class Parent extends Api {
     public String getType() {
         return super.getType();
     }
+
+    public String getMyParent() {
+        getParent();
+        return myParent;
+    }
+
+    public void getParent(){//this function should return the name of the fields parent ******Needs Check*******
+        String [] arr;
+        arr= super.getField_name().split("/"); //Split /object1/object2/field6 into [ ,object1, object2,field6]
+        if(arr.length<=2) {super.setField_name(arr[arr.length-1]);}
+        else {
+            super.setField_name(arr[arr.length-1]); //Update Field name
+            setParent(arr[arr.length-2]); }//the name before field name is the parent
+        //We need to connect this parent to an object we already made not make a new one
+
+    }
+    @Override
+    public void Print(){
+        System.out.println("Field name is "+ getField_name());
+        // System.out.println("Allowed value is"+ getAllowed_value()); no allowed value for objects
+        System.out.println("Mandatory is "+getMandatory());
+        System.out.println("Type is "+getType());
+        System.out.println("Parent is "+getMyParent());
+        System.out.println("--");
+    }
 }
+
 
