@@ -14,7 +14,7 @@ public class Main {
         int skippedRows=0; //we need them because some rows with no useful info are skipped
 
         //Create a file with our wanted path
-        File file = new File("C:/Users/pc/Downloads/Example.xlsx");
+        File file = new File("C:/Users/pc/Downloads/info.xlsx");
         //raw data from the file
         FileInputStream fis = new FileInputStream(file);
         //convert the data into workbook format
@@ -33,27 +33,30 @@ public class Main {
             //we will iterate on the cells of each row
             Iterator<Cell> cellIterator = nextRow.cellIterator();
 
-           /*if(nextRow.getRowNum()<6){
-               skippedRows++;
-               continue;
-           }*/
+            /*if(nextRow.getRowNum()<6){
+            skippedRows++;
+            continue;
+            }*/
+
             //we had to do this due to the empty rows in the middle
-            try{
-                //If the type is string put in fields else put in parent
+            try{//If the type is string put in fields else put in parent
                 if(nextRow.getCell(2).getStringCellValue().equals("string")){elements.add(new Field());}
                 else if(nextRow.getCell(2).getStringCellValue().startsWith("object")){elements.add(new Parent());}
                 //if the type isn't field or object then it is not a useful file so skip it
                 else {skippedRows++; continue;}
             }
-            catch (NullPointerException e){
+            catch (NullPointerException e)
+            {
                 //Sometimes the row is completely empty and thus it's trated as null and cause error
                 //We have no choice but to skip it.
                 skippedRows++;
-                continue;}
+                continue;
+            }
 
 
             //While there are cells we want to iterate on them
-            while (cellIterator.hasNext()) {
+            while (cellIterator.hasNext())
+            {
                 //Get next cell
                 Cell cell = cellIterator.next();
                 //Here we get the string value of the cell
@@ -73,30 +76,34 @@ public class Main {
                             case 4: elements.get((nextRow.getRowNum())-skippedRows).setMandatory(WantedSCell);
 
                         } //End of Switch
+
                     } //End of Cell iterator while
                 }  //End of our wanted Cells
 
             } //End of the default Cell iterator
         } //End of the Row iterator
 
-        //ArrayList <Field> clone = elements;
-        for(int k=0;k<elements.size();k++){
-            //elements.get(7).Print();
-            System.out.println("Field name is "+ elements.get(k).getField_name());
-            // System.out.println("Allowed value is"+ getAllowed_value()); no allowed value for objects
-            System.out.println("Mandatory is "+ elements.get(k).getMandatory());
-            System.out.println("Parent is "+ elements.get(k).getMyParent());
-
-            System.out.println("Children are " + elements.get(k).PutChildren(elements));
-
-            System.out.println("--");
+        //For Gui we made an array of parents only, because we will display them
+        ArrayList <Field> parents=new ArrayList<>();
+        for(Field f : elements){
+            if(f instanceof Parent) parents.add(f);
+            else if(f.hasNOParents()){ parents.add(f);}
         }
 
+
+            /*ATestbench
+            for(Field p: parents){
+               // p.Print();
+            System.out.println("Children are : "+p.PutChildren(elements));
+            System.out.println("--");
+
+            }*/
+
+        //Close WorkBook and the whole file
         workbook.close();
         fis.close();
     } //End of main function
 } //End of main class
-
 
 
 class Field {
@@ -177,7 +184,6 @@ class Field {
         System.out.println("Mandatory is "+getMandatory());
         System.out.println("Type is "+getType());
         System.out.println("Parent is "+getMyParent());
-        System.out.println("--");
     }
     public String PutChildren(ArrayList<Field> elements){
         return "This is field no children";
@@ -190,6 +196,8 @@ class Parent extends Field {
 
     //private String [] children;
     ArrayList <String> Children= new ArrayList<>();
+    ArrayList <String> information =new ArrayList<>();
+    ArrayList <String> Mand =new ArrayList<>();
     //no arg constructor
     public Parent(){
         super();
@@ -199,9 +207,7 @@ class Parent extends Field {
 
     }
 
-    public ArrayList<String> getChildren() {
-        return Children;
-    }
+
 
     public void setChildren(ArrayList<String> children) {
 
@@ -215,8 +221,6 @@ class Parent extends Field {
         System.out.println("Mandatory is "+getMandatory());
         System.out.println("Type is "+getType());
         System.out.println("Parent is "+getMyParent());
-        System.out.println("Children are "+getChildren());
-        System.out.println("--");
     }
     public String PutChildren(ArrayList<Field> elements){
         //we want the function to check if the parent name is th object name regardless of its type
@@ -224,12 +228,14 @@ class Parent extends Field {
         for(int i=0;i< elements.size();i++){
             if(elements.get(i).getMyParent().equals(super.getField_name())){
                 Children.add(elements.get(i).getField_name());
+                if(elements.get(i).getAllowed_value()!= ""){information.add(elements.get(i).getAllowed_value());}
+                Mand.add(elements.get(i).getMandatory());
             }
-
         }
-
         for(int j=0;j<Children.size();j++){
-            s=s+" "+Children.get(j);
+            s = s+"\n "+Children.get(j);
+            if(elements.get(j).getAllowed_value()!= ""){s= s+" Allowed_values "+information.get(j);}
+            s= s+" Mandatory "+Mand.get(j);
         }
 
         return s;}
