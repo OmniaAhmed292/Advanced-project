@@ -1,0 +1,31 @@
+public class Main extends Application {
+	@Override
+	public void start(Stage primaryStage) {
+		try {
+			
+			//Arrylist<parent> p=new Arrylist<parent>();
+			Arrylist<feild> f=new Arrylist<feild>();
+			HBox [] root;
+			Scene[] scene; 
+			 Stage []object;
+			
+			for(int i=0;i<f.size;i++) //obj loop
+			{
+				root[i]=new HBox();
+			    scene[i] = new Scene(root[i],300,300);
+			    //scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
+			     object[i]=new Stage();
+			     object[i].setTitle(f.get(i).getfeildname());
+			     object[i].setScene(scene[i]);
+			     String b=f.putChildren(elemnts);
+			     root[i].getChildren().add(new Label(b));
+			     object[i].show();
+			
+			}
+			
+			
+			
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
