@@ -2,7 +2,7 @@ package com.company;
 
 import java.util.ArrayList;
 
-class Parent extends Field {
+class Parent extends Field{
     //Data fields
 
     //private String [] children;
@@ -37,20 +37,23 @@ class Parent extends Field {
         //we want the function to check if the parent name is th object name regardless of its type
         String s=" ";
         for(int i=0;i< elements.size();i++){
+            if(elements.get(i).getApiName().equals(super.getApiName())){
             if(elements.get(i).getMyParent().equals(super.getField_name())){
                 Children.add(elements.get(i).getField_name());
                 if(elements.get(i).getAllowed_value()!=" "){information.add(elements.get(i).getAllowed_value());}
+                else{information.add("None");}
                 Mand.add(elements.get(i).getMandatory());
             }
         }
+        else{continue;} }
         for(int j=0;j<Children.size();j++){
             s = s+"\n "+Children.get(j);
-            if(elements.get(j).getAllowed_value()!=" "){s= s+"  Allowed_values      "+information.get(j);}
-            s= s+"  Mandatory     "+Mand.get(j);
+            if(elements.get(j).getAllowed_value()!=" "){s= s+"  Allowed_values       "+information.get(j);}
+            s= s+ "  Mandatory    "+Mand.get(j);
         }
 
         return s;}
 
-    //if so we want it to add it to the list of its children
-    //if not then Do nothing
+        //if so we want it to add it to the list of its children
+        //if not then Do nothing
 }
