@@ -8,6 +8,7 @@ class Field {
     private String mandatory=null;
     private String type=null;
     private String myParent="No parents"; //here we put the parent of our field (there might be none) initial value
+    private String ApiName;
 
     //No arg constructor
     public Field(){
@@ -58,6 +59,14 @@ class Field {
         return myParent;
     }
 
+    public String getApiName() {
+        return ApiName;
+    }
+
+    public void setApiName(String apiName) {
+        ApiName = apiName;
+    }
+
     //return true of the field has no parents and false if not
     public boolean hasNOParents(){
         return this.getField_name().startsWith("/field"); //if there's no object before the field name
@@ -68,8 +77,8 @@ class Field {
         arr= this.getField_name().split("/"); //Split /object1/object2/field6 into [ ,object1, object2,field6]
         if(arr.length<=2) {this.setField_name(arr[arr.length-1]);}
         else{
-            setField_name(arr[arr.length-1]); //Update Field name
-            setMyParent(arr[arr.length-2]); }//the name before field name is the parent
+        setField_name(arr[arr.length-1]); //Update Field name
+        setMyParent(arr[arr.length-2]); }//the name before field name is the parent
         //We need to connect this parent to an object we already made not make a new one
 
     }
