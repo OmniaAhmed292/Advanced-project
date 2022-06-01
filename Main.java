@@ -1,31 +1,35 @@
 package com.company;
 
+
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Iterator;
 //Apache
-import javafx.scene.Scene;
-import javafx.scene.layout.Pane;
-import javafx.scene.text.Text;
-import javafx.stage.Stage;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+//java fx
 import javafx.application.*;
-import java.awt.*;
+import javafx.scene.text.*;
+import javafx.scene.*;
 import javafx.scene.layout.*;
-
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.stage.Stage;
 
 
 public class Main extends Application {
-
+    //public static void main(String[] args){
     public void start(Stage primaryStage) throws IOException{
         int skippedRows=0; //we need them because some rows with no useful info are skipped
-
+        String ApiName="not yet";
         //Create a file with our wanted path
-        File file = new File("C:/Users/DELL 3550/Downloads/ENG.Rana/Second Year/Second Term/Java OOP/Example.xlsx");
+        File file = new File("C:/Users/pc/Downloads/basic.xlsx");
         //raw data from the file
         FileInputStream fis = new FileInputStream(file);
         //convert the data into workbook format
@@ -44,16 +48,25 @@ public class Main extends Application {
             //we will iterate on the cells of each row
             Iterator<Cell> cellIterator = nextRow.cellIterator();
 
+            /*if(nextRow.getRowNum()<6){
+            skippedRows++;
+            continue;
+            }*/
+
             //we had to do this due to the empty rows in the middle
             try{//If the type is string put in fields else put in parent
-                if(nextRow.getCell(2).getStringCellValue().equals("string")){elements.add(new Field());}
+                if(nextRow.getCell(0).getStringCellValue().startsWith("REST Operation Mapping")) {
+                ApiName=nextRow.getCell(0).getStringCellValue().substring(22);
+                skippedRows++;}
+                else if(nextRow.getCell(2).getStringCellValue().equals("string")){elements.add(new Field());}
                 else if(nextRow.getCell(2).getStringCellValue().startsWith("object")){elements.add(new Parent());}
+
                 //if the type isn't field or object then it is not a useful file so skip it
                 else {skippedRows++; continue;}
             }
             catch (NullPointerException e)
             {
-                //Sometimes the row is completely empty, and thus it's treated as null and cause error
+                //Sometimes the row is completely empty and thus it's trated as null and cause error
                 //We have no choice but to skip it.
                 skippedRows++;
                 continue;
@@ -75,6 +88,7 @@ public class Main extends Application {
                         String WantedSCell = wantedCell.getStringCellValue();
 
                         //since cells positions is fixed we will depend on it to store wanted elements
+                        elements.get((nextRow.getRowNum())-skippedRows).setApiName(ApiName);
                         switch(wantedCell.getColumnIndex()){
                             case 1: elements.get((nextRow.getRowNum())-skippedRows).setField_name(WantedSCell);
                             case 2: elements.get((nextRow.getRowNum())-skippedRows).setType(WantedSCell);
@@ -89,66 +103,115 @@ public class Main extends Application {
             } //End of the default Cell iterator
         } //End of the Row iterator
 
-        //For Gui, we made an array of parents only, because we will display them
+        //For Gui we made an array of parents only, because we will display them
         ArrayList <Field> parents = new ArrayList<>();
         for(Field f : elements){
             if(f instanceof Parent) parents.add(f);
             else if(f.hasNOParents()){ parents.add(f);}
         }
 
+
+            /*ATestbench
+            for(Field p: parents){
+               // p.Print();
+            System.out.println("Children are : "+p.PutChildren(elements));
+            System.out.println("--");
+
+            }*/
+
         //Close WorkBook and the whole file
         workbook.close();
         fis.close();
         try {
-            //Arraylist<parent> p=new Arraylist<parent>();
-            ArrayList<VBox> root = new ArrayList<>() ;
-            ArrayList<Scene> scene = new ArrayList<>();
-            ArrayList<Stage> stage = new ArrayList<>();
-            ArrayList <Text> Headline1 = new ArrayList<>();
-            ArrayList <Text> Headline2 = new ArrayList<>();
-            ArrayList<Pane> pane = new ArrayList<>();
-            for(int i = 0; i<parents.size(); i++) //obj loop
-            {
+            //Elements we need to add before the loop
+            ArrayList<VBox> root = new ArrayList<VBox>() ;
+            ArrayList<Scene> scene = new ArrayList<Scene>();
+            ArrayList<Stage> stage = new ArrayList<Stage>();
+            ArrayList <Text> Headline1 =new ArrayList<Text>();
+            ArrayList <Text> Headline2 =new ArrayList<Text>();
+            ArrayList<Pane> topPane =new ArrayList<>();
+
+            //integers we need for some calculations
+            int j=0;int V=0,H=0;
+            //initializations
+            stage.add(new Stage());
+            topPane.add(new GridPane());
+            scene.add(new Scene(topPane.get(0),500,500));
+
+            //Our MAIN LOOP
+            for(int i=0;i<parents.size();i++)
+            {   //Things to be created each loop
                 root.add(new VBox());
-                scene.add(new Scene(root.get(i),300,300));
-                pane.add(new Pane());
                 Headline1.add(new Text());
                 Headline2.add(new Text());
-                //scene.getStylesheets().add(getClass().getResource("application.css").toExternalForm());
-                stage.add(new Stage());
-                stage.get(i).setTitle(parents.get(i).getField_name());
-                stage.get(i).setScene(scene.get(i));
-                String b = parents.get(i).PutChildren(elements);
 
-                Font font =new Font("Georgia", Font.BOLD,20);
 
-                Headline1.get(i).setText(parents.get(i).getField_name());
-                Headline2.get(i).setText(b);
-                Headline1.get(i).setFont(new javafx.scene.text.Font("Georgia",20));
-                Headline1.get(i).setFont(new javafx.scene.text.Font("Times new roman",16));
-                //Headline1.get(i).fontProperty();
+                //To manage having more than one Api
+                if(i!=0){
+                if(parents.get(i).getApiName() != parents.get(i-1).getApiName()){
 
+                    stage.add(new Stage()); //add new stage only if the Api name is different
+                    stage.get(j).setScene(scene.get(j));
+                    topPane.add(new Pane());
+                    System.out.println("new Api");
+                    j++; //A flag to get the indexes of our stages
+                    V=0;
+                    H=0;
+                    scene.add(new Scene(topPane.get(j),500,500));
+
+
+                }
+                else{ //Api are equal
+                    stage.get(j).setTitle(parents.get(i).getApiName());
+                    stage.get(j).setScene(scene.get(j));
+                    System.out.println("Api is equal");
+
+                }}
+                else{
+                    System.out.println("else is invoked");
+                    stage.get(j).setTitle(parents.get(i).getApiName());
+                    stage.get(j).setScene(scene.get(j));
+                }
+
+                String b = parents.get(i).PutChildren(elements); //To get the children of each element
+
+                Headline1.get(i).setText(parents.get(i).getField_name()); //name of the current object
+                Headline2.get(i).setText(b); //Put Children here
+                //Properties of the two Texts"
+                Headline1.get(i).setFont(Font.font("Times New Roman", FontWeight.BOLD, FontPosture.ITALIC, 24));
+                Headline1.get(i).setFill(Color.BLUEVIOLET);
+                Headline1.get(i).setFont(new Font("Times New Roman",16));
 
 
 
                 root.get(i).getChildren().add(Headline1.get(i));
                 root.get(i).getChildren().add(Headline2.get(i));
 
-                //root.get(i).getChildren().add();
-                stage.get(i).show();
+                //Put the panes in a larger/Top pane
+                topPane.get(j).getChildren().add(root.get(i));
+                //How does each small pane look
+                root.get(i).setAlignment(Pos.TOP_LEFT);
+                root.get(i).setPadding(new Insets(V*200,0,0, H*300));
+                V++;
+                if(V==3) {V=0;H++;};
+                if(H==3){H=0; V++;}
+
+
+                for(int k=0; k<stage.size();k++){stage.get(k).show();}
+
             }
         } catch(Exception e) {
             e.printStackTrace();
         }
 
         //End of main class
-
-    }
-
+         }
     public static void main(String[] args){
         launch(args);
     }
 }
+
+
 
 
 
